@@ -1,0 +1,435 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+}
+
+/* Heading */
+.heading h2 {
+    font-size: 28px;
+    font-weight: 500;
+    border-left: 8px solid #303054;
+    padding: 5px 15px;
+    margin-bottom: 15px;
+}
+
+.heading p {
+    font-size: 18px;
+}
+
+.heading p span {
+    font-weight: 600;
+    color: #303054;
+}
+
+/* Buttons */
+.btn1 {
+    font-size: 1rem;
+    font-weight: 400;
+    background-color: #303054;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none !important;
+    transition: all 0.5s;
+}
+
+.btn1:hover {
+    background-color: #e6edff;
+    color: #303054;
+}
+
+/* Header */
+header {
+    background-color: #303054;
+    width: 100%;
+}
+
+header .navbar-brand {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+}
+
+nav {
+    padding: 8px 0px !important;
+}
+
+.cont-sec {
+    padding: 8px;
+    background-color: #e6edff;
+    width: 100%;
+}
+
+.cont-sec .contact-cont {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cont-sec p {
+    margin: 0;
+}
+
+.cont-sec p a {
+    text-decoration: none;
+    color: #303054;
+}
+
+.cont-sec .social {
+    text-align: right
+}
+
+.cont-sec .social a img {
+    width: 20px;
+    margin-left: 15px;
+}
+
+.home-sec {
+    padding: 100px 0;
+}
+
+.home-sec .home-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.home-sec .home-content h1 {
+    font-size: 2.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.home-sec .home-content h2 span {
+    color: #14e20d;
+}
+
+.home-sec .home-content h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+
+.home-sec .home-content p {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+}
+
+.home-sec .img-sec {
+    display: flex;
+    justify-content: center;
+}
+
+.home-sec .img-sec img {
+    max-width: 100%;
+    height: auto;
+}
+
+.about-sec {
+    padding: 150px 0;
+    background-color: #e6edff;
+}
+
+.about-sec img {
+    width: 100%;
+    max-width: 350px;
+    border: 5px solid #303054;
+    border-radius: 5px;
+}
+
+.about-sec .about-txt p {
+    font-size: 18px;
+}
+
+.don-sec {
+    background-color: #e6edff;
+    padding: 150px 0;
+}
+
+.don-sec .don-box {
+    margin: 50px 0;
+    background-color: #fff;
+    padding: 50px;
+    text-align: center;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #b4afaf;
+    transition: all 1s;
+}
+
+.don-sec .don-box img {
+    width: 70px;
+    transition: all 1s;
+}
+
+.don-sec .don-box h3 {
+    margin: 15px 0 10px;
+}
+
+.don-sec .don-box p {
+    margin-bottom: 25px;
+}
+
+.don-sec .don-box:hover img {
+    transform: scale(1.1);
+}
+
+.mission {
+    padding: 150px 0;
+}
+
+.gallery-sec {
+    position: relative;
+    padding: 50px 0;
+}
+
+.gallery-sec .image-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    padding: 10px;
+}
+
+.gallery-sec .image-container .image {
+    height: 200px;
+    width: 300px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.gallery-sec .image-container .image img {
+    height: 100%;
+    width: 100%;
+    border: 5px solid #d4d4d4;
+    object-fit: cover;
+    transition: 0.2s linear;
+}
+
+.gallery-sec .image-container .image:hover img {
+    transform: scale(1.1);
+}
+
+.gallery-sec .pop-image {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.gallery-sec .pop-image img {
+    width: 70%;
+    border: 5px solid white;
+    border-radius: 5px;
+}
+
+.gallery-sec .pop-image span {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 40px;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+}
+
+.contact-section {
+    padding: 150px 0;
+}
+
+.contact-form {
+    background-color: #e6edff;
+    padding: 30px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px #b4afaf;
+}
+
+.contact-form .form-control {
+    margin-bottom: 15px;
+}
+
+footer {
+    background-color: #303054;
+    color: #fff;
+    padding: 20px 0;
+}
+
+footer h4 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+footer p, footer a {
+    font-size: 14px;
+    color: #fff;
+}
+
+footer a {
+    text-decoration: none;
+}
+
+footer .social a img {
+    width: 20px;
+    margin-right: 10px;
+}
+
+/* Media Queries */
+@media (max-width: 991px) {
+    .home-sec {
+        padding: 50px 0;
+    }
+
+    .about-sec {
+        padding: 100px 0;
+    }
+
+    .don-sec {
+        padding: 100px 0;
+    }
+
+    .mission {
+        padding: 100px 0;
+    }
+
+    .contact-section {
+        padding: 100px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 18px;
+    }
+
+    .home-sec .home-content h1 {
+        font-size: 1.8rem;
+    }
+
+    .home-sec .home-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .home-sec .home-content p {
+        font-size: 1.2rem;
+    }
+
+    .about-sec img {
+        max-width: 300px;
+    }
+
+    .don-sec .don-box {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 576px) {
+    .cont-sec .contact-cont {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .cont-sec p {
+        margin-bottom: 10px;
+    }
+
+    .cont-sec .social {
+        text-align: center;
+    }
+
+    .home-sec .home-content h1 {
+        font-size: 1.5rem;
+    }
+
+    .home-sec .home-content h2 {
+        font-size: 1.2rem;
+    }
+
+    .home-sec .home-content p {
+        font-size: 1rem;
+    }
+
+    .don-sec .don-box {
+        padding: 20px;
+    }
+}
+/* Basic styles */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .header {
+    background-color: #333; /* Dark blue header */
+    color: #fff; /* White text */
+    padding: 20px;
+    text-align: center;
+  }
+  
+  h1, h2, h3 {
+    margin: 0;
+    padding: 10px;
+  }
+  
+  .hero {
+    display: flex;
+    align-items: center;
+  }
+  
+  .hero img {
+    flex: 1;
+    height: auto;
+    width: 100%;
+  }
+  
+  .hero-content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .benefits,
+  .opportunities,
+  .testimonials {
+    margin: 20px 0;
+  }
+  
+  .benefit,
+  .testimonial {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .benefit img,
+  .testimonial img {
+    margin-right: 10px;
+  }
+  
+  .footer {
+    background-color: #eee; /* Light gray footer */
+    padding: 10px;
+    text-align: center;
+  }
+  
+  /* Responsiveness (Adjust media query sizes as needed) */
+  @media (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+    }
+  
+    
+  }  

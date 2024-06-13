@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .signup-container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 320px;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .signup-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .signup-container input[type="text"],
+        .signup-container input[type="email"],
+        .signup-container input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .signup-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .signup-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .signup-container p {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .signup-container a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .signup-container a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h2>Admin Sign Up</h2>
+        <form id="signup-form" action="/user" method="POST">
+            <input type="text" name="name" placeholder="Username" required><br>
+            <input type="email" name="email" placeholder="Email" required><br>
+            <input type="password" name="password" placeholder="Password" required><br>
+            <button type="submit">Sign Up</button>
+        </form>
+        <p>Already have an account? <a href="/login">Log in</a></p>
+    </div>
+
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Get form data
+            const formData = new FormData(this);
+
+            // Create a new XMLHttpRequest object
+            const xhr = new XMLHttpRequest();
+
+            // Configure the request
+            xhr.open('POST', '/user');
+
+            // Set the request headers
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Define the callback function
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // If the request was successful, display a success message
+                    alert('Admin user created successfully');
+                    // Redirect to login page or perform any other action
+                    window.location.href = '/login';
+                } else {
+                    // If the request failed, display an error message
+                    alert('Error: ' + xhr.statusText);
+                }
+            };
+
+            // Send the request with form data
+            xhr.send(new URLSearchParams(formData));
+        });
+    </script>
+</body>
+</html>

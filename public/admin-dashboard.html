@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Global Care Foundation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="./css/admin-dashboard.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="hamburger" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <a href="index.html">Global Care Foundation</a>
+        <div class="admin-info">
+            <span id="admin-name">Admin: </span>
+            <i class="fas fa-sign-out-alt" title="Logout" onclick="logout()"></i>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <a href="#content"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="#volunteers"><i class="fas fa-users"></i> Volunteers</a>
+        <a href="#donors"><i class="fas fa-hand-holding-usd"></i> Donors</a>
+        <a href="#content"><i class="fas fa-blog"></i> Blog Posts</a>
+        <!--search option still not created        
+        <div class="search">
+            <input type="text" placeholder="Search...">
+        </div>
+         -->
+    </div>
+
+    <div class="content" id="content">
+        <div class="card">
+            <div class="section-header">
+                <h2>Blog Posts</h2>
+                <button id="add-blog-btn"><i class="fas fa-plus"></i> Add Blog</button>
+            </div>
+            <div id="blogs-list" class="grid-container scrollable">
+                <!-- Dynamically populated list of blog posts -->                
+            </div>
+        </div>
+
+        <div class="card" id="volunteers">
+            <div class="section-header">
+                <h2>Volunteers</h2>
+               <!---- <button>All Volunteers</button>-->
+            </div>
+            <div id="volunteers-list" class="scrollable">
+                <!-- Dynamically populated list of volunteers -->                
+            </div>
+        </div>
+
+        <div class="card" id="donors">
+            <div class="section-header">
+                <h2>People Who Donated</h2>
+                <!--<button>All Donors</button>-->
+            </div>
+            <div id="donors-list" class="grid-container scrollable">
+                <!-- Dynamically populated list of donors -->                
+        </div>
+    </div>
+
+    <div id="blog-form-popup" class="popup-form">
+        <button class="close-btn" onclick="togglePopup()">&times;</button>
+        <h2>Post a Blog</h2>
+        <form id="blog-form">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" placeholder="Enter blog title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Content:</label>
+                <textarea id="content" name="content" rows="8" placeholder="Enter blog content" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="picture" class="file-label"><i class="fas fa-upload"></i> Choose a Picture</label>
+                <input type="file" id="picture" name="picture" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label for="author">Author's Name:</label>
+                <input type="text" id="authorName" name="author" placeholder="Enter author's name" required>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Post">
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function logout() {           
+            alert('Logging out...');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        function togglePopup() {
+            const popupForm = document.getElementById('blog-form-popup');
+            popupForm.classList.toggle('active');
+        }
+
+        document.getElementById('add-blog-btn').addEventListener('click', togglePopup);
+
+        // Fetch authenticated user info and set admin name
+        fetch('/api/auth-user')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('admin-name').textContent = `Admin: ${data.name}`;
+            })
+            .catch(error => {
+                console.error('Error fetching authenticated user info:', error);
+            });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+          $('#blog-form').submit(function (event) {
+            event.preventDefault();
+            const title = $('#title').val();
+            const content = $('#content').val();
+            const picture = $('#picture').val();
+            const authorName = $('#authorName').val(); 
+      
+            // Send data to server including the selected category
+            $.post('/post-blog', { title, content, picture, authorName }, function (response) {
+              alert(response);
+              $('#title').val('');
+              $('#content').val('');
+              $('#picture').val('');
+              $('#authorName').val(''); 
+            }).fail(function () {
+              alert('Error submitting blog post');
+            });
+          });
+        });
+    </script>
+    
+    <script src="js/admin.js"></script>
+</body>
+</html>
