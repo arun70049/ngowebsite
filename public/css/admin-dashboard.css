@@ -41,28 +41,28 @@
         .navbar .admin-info i {
             cursor: pointer;
         }
-
-        .navbar .hamburger {
-            display: block;
+        .navbar .hamburger {           
             font-size: 24px;
             cursor: pointer;
+            margin-right: 5px;
         }
-
-        .sidebar {
+        
+        #sidebar {
             position: fixed;
-            top: 60px;
+            top: 60px; /* Adjust if your navbar height changes */
             left: 0;
             width: 250px;
-            height: calc(100% - 60px);
+            height: calc(100% - 60px); /* Adjust if your navbar height changes */
             background-color: #343a40;
             color: #fff;
             display: flex;
             flex-direction: column;
             padding: 20px 0;
             transition: transform 0.3s ease;
+            z-index: 1000;
         }
-
-        .sidebar a {
+        
+        #sidebar a {
             color: #fff;
             text-decoration: none;
             padding: 15px 20px;
@@ -70,22 +70,35 @@
             align-items: center;
             transition: background-color 0.3s, padding-left 0.3s;
         }
-
-        .sidebar a:hover {
+        #sidebar span {
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
+        #sidebar span:hover {
             background-color: #495057;
             padding-left: 25px;
         }
-
-        .sidebar a i {
+        #sidebar a:hover {
+            background-color: #495057;
+            padding-left: 25px;
+        }
+        
+        #sidebar a i {
             margin-right: 10px;
         }
-
-        .sidebar .search {
+        #sidebar span i {
+            margin-right: 10px;
+        }
+        #sidebar .search {
             padding: 10px 20px;
             border-top: 1px solid #495057;
         }
-
-        .sidebar .search input[type="text"] {
+        
+        #sidebar .search input[type="text"] {
             padding: 5px 10px;
             border-radius: 20px;
             border: none;
@@ -93,8 +106,8 @@
             width: calc(100% - 20px);
             margin-top: 10px;
         }
-
-        .content {
+        
+      .content {
             margin-left: 250px;
             padding: 20px;
             flex: 1;
@@ -260,23 +273,25 @@
         }
 
         @media (max-width: 768px) {
-            .sidebar {
+            #sidebar {
                 transform: translateX(-100%);
                 width: 200px;
             }
-
-            .sidebar.active {
+        
+            #sidebar.active {
                 transform: translateX(0);
             }
+        
+            
 
             .content {
                 margin-left: 0;
             }
 
             .navbar .search,
-            .navbar .admin-info {
-                flex: 1;
+            .navbar .admin-info {                
                 justify-content: flex-end;
+                margin-right: 0;
             }
 
             .navbar .admin-info {

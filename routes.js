@@ -3,7 +3,10 @@ const router = express.Router();
 const client = require('./db');
 const bcrypt = require('bcrypt');
 const moment = require('moment');
-const path = require('path'); // Added this line to fix the 'path is not defined' error
+const path = require('path');
+const multer = require('multer');
+const ObjectId = require('mongodb').ObjectId;
+
 const db = client.db('global_care_db');
 
 // Middleware to check if the user is logged in
@@ -14,6 +17,19 @@ function requireLogin(req, res, next) {
         return res.redirect('/login');
     }
 }
+
+// Define storage for uploaded images
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '/public/images')); // Adjust path as necessary
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+// Initialize multer instance with storage options
+const upload = multer({ storage: storage });
 
 // Serve HTML files
 router.get('/', (req, res) => {
@@ -36,8 +52,61 @@ router.get('/signup', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/sign-up.html'));
 });
 
-// Fetch data for the admin dashboard
-router.get('/api/volunteers', async (req, res) => {
+// Login route (GET to serve the login page)
+router.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/login.html'));
+});
+
+// Handle login form submission (POST to process login)
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    const usersCollection = db.collection('users');
+    
+    try {
+        const user = await usersCollection.findOne({ email });
+        
+        if (user && bcrypt.compareSync(password, user.password)) {
+            req.session.user = user;
+            res.redirect('/dashboard');
+        } else {
+            res.send('Invalid username or password');
+        }
+    } catch (error) {
+        console.error('Error logging in:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+// Handle blog form submission
+router.post('/post-blog', upload.single('picture'), async (req, res) => {
+    const { title, content, authorName } = req.body;
+    const picture = req.file;
+    const now = moment().format('YYYY-MM-DD HH:mm:ss');
+    
+    try {
+        if (!title || !content || !authorName || !picture) {
+            return res.status(400).send('Please fill in all fields');
+        }
+        
+        const newBlog = {
+            title,
+            content,
+            authorName,
+            picture: '/images/' + picture.filename,
+            date: now,
+            time: now,
+        };
+
+        await db.collection('blogs').insertOne(newBlog);
+        res.status(200).send('Blog posted successfully');
+    } catch (error) {
+        console.error('Error posting blog:', error);
+        res.status(500).send('Error posting blog');
+    }
+});
+
+// API routes to fetch data for admin dashboard (require login middleware)
+router.get('/api/volunteers', requireLogin, async (req, res) => {
     try {
         const volunteers = await db.collection('volunteers').find().toArray();
         res.json(volunteers);
@@ -46,7 +115,7 @@ router.get('/api/volunteers', async (req, res) => {
     }
 });
 
-router.get('/api/blogs', async (req, res) => {
+router.get('/api/blogs', requireLogin, async (req, res) => {
     try {
         const blogs = await db.collection('blogs').find().toArray();
         res.json(blogs);
@@ -55,7 +124,7 @@ router.get('/api/blogs', async (req, res) => {
     }
 });
 
-router.get('/api/donors', async (req, res) => {
+router.get('/api/donors', requireLogin, async (req, res) => {
     try {
         const donors = await db.collection('donations').find().toArray();
         res.json(donors);
@@ -64,29 +133,6 @@ router.get('/api/donors', async (req, res) => {
     }
 });
 
-// Handle blog form submission
-router.post('/post-blog', async (req, res) => {
-    const { title, content, authorName, picture } = req.body;
-    const now = moment().format('YYYY-MM-DD HH:mm:ss');
-    try {
-        await db.collection('blogs').insertOne({
-            title,
-            content,
-            authorName,
-            picture,
-            date: now,
-            time: now,
-        });
-        res.status(200).send('Blog posted successfully');
-    } catch (error) {
-        res.status(500).send('Error posting blog');
-    }
-});
-// API route to get the authenticated user's info
-router.get('/api/auth-user', requireLogin, (req, res) => {
-    const user = req.session.user;
-    res.json({ name: user.name });
-});
 // Handle volunteer form submission
 router.post('/submit-volunteer', async (req, res) => {
     const { name, email, message } = req.body;
@@ -100,13 +146,31 @@ router.post('/submit-volunteer', async (req, res) => {
 
 // Handle donation form submission
 router.post('/submit-donation', async (req, res) => {
-    const { name, email, amount, category } = req.body;
+    const { name, email, amount, category, dob } = req.body;
     const validCategories = ['clothes', 'food', 'fund', 'footwear', 'gadgets', 'stationary'];
+
+    // Function to validate date in YYYY-MM-DD format
+    const isValidDate = (dateString) => {
+        const regex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!regex.test(dateString)) {
+            return false;
+        }
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date);
+    };
+
+    // Validate the donation category
     if (!validCategories.includes(category)) {
         return res.status(400).send('Invalid donation category');
     }
+
+    // Validate the date of birth
+    if (!isValidDate(dob)) {
+        return res.status(400).send('Invalid date of birth');
+    }
+
     try {
-        await db.collection('donations').insertOne({ name, email, amount, category });
+        await db.collection('donations').insertOne({ name, email, amount, category, dob });
         res.status(200).send('Donation form submitted successfully');
     } catch (error) {
         res.status(500).send('Error submitting donation form');
@@ -116,44 +180,35 @@ router.post('/submit-donation', async (req, res) => {
 // Handle user sign up
 router.post('/user', async (req, res) => {
     const { name, email, password } = req.body;
+    
     try {
         const existingUser = await db.collection('users').findOne({ email });
+        
         if (existingUser) {
             return res.status(400).send('Email already exists');
         }
+        
         const hashedPassword = await bcrypt.hash(password, 10);
+        
         await db.collection('users').insertOne({ name, email, password: hashedPassword, isAdmin: "False" });
+        
         res.status(200).send('User signed up successfully');
     } catch (error) {
+        console.error('Error signing up user:', error);
         res.status(500).send('Error signing up user');
     }
 });
-
-// Login route
-router.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/login.html'));
+// API route to get the authenticated user's info
+router.get('/api/auth-user', requireLogin, (req, res) => {
+    const user = req.session.user;
+    res.json({ name: user.name });
 });
-
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    const usersCollection = db.collection('users');
-    try {
-        const user = await usersCollection.findOne({ email });
-        if (user && bcrypt.compareSync(password, user.password)) {
-            req.session.user = user;
-            res.redirect('/dashboard');
-        } else {
-            res.send('Invalid username or password');
-        }
-    } catch (error) {
-        res.status(500).send('Internal Server Error');
-    }
-});
-
 // Logout route
 router.get('/logout', (req, res) => {
     req.session.destroy((err) => {
-        if (err) throw err;
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
         res.redirect('/login');
     });
 });
@@ -161,24 +216,29 @@ router.get('/logout', (req, res) => {
 // Admin dashboard route (protected route, requires login)
 router.get('/dashboard', requireLogin, (req, res) => {
     const user = req.session.user;
+    
     if (user.isAdmin === "true") {
         res.sendFile(path.join(__dirname, 'public/admin-dashboard.html'));
     } else {
-        res.send('You do not have permission to access this page');
+        res.status(403).send('You do not have permission to access this page');
     }
 });
+
 // Serve blog details page
 router.get('/blog-details', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/blog-page1.html'));
+    res.sendFile(path.join(__dirname, 'public/blog-details.html'));
 });
 
-// API to get a blog by ID
-router.get('/api/blog/:id', async (req, res) => {
+// API to get a blog by ID (require login middleware)
+// API to get a blog by ID (require login middleware)
+router.get('/api/blog/:id', requireLogin, async (req, res) => {
     const blogId = req.params.id;
+    
     try {
         const blog = await db.collection('blogs').findOne({ _id: new ObjectId(blogId) });
+        
         if (blog) {
-            res.json(blog);
+            res.json(blog); // Return the blog data as JSON
         } else {
             res.status(404).send('Blog not found');
         }
@@ -187,5 +247,7 @@ router.get('/api/blog/:id', async (req, res) => {
         res.status(500).send('Error fetching blog');
     }
 });
+
+
 
 module.exports = router;

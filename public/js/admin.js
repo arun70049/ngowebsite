@@ -11,12 +11,12 @@ $(document).ready(function () {
                         <p>${blog.content}</p>
                         <p><strong>Author:</strong> ${blog.authorName}</p>
                         <p><strong>Date:</strong> ${blog.date}</p>
-                    
+                        <button onclick="location.href='/blog-details?_id=${blog._id}'">Read More</button>
                     </div>`;
                 blogList.append(blogItem);
             });
         });
-//read more button is not working properly so removed it     <button onclick="location.href='/api/blogs/${blog._id}'">Read More</button>
+
     // Fetch and display volunteers
     fetch('/api/volunteers')
         .then(response => response.json())
@@ -40,8 +40,9 @@ $(document).ready(function () {
             data.forEach(donor => {
                 const donorItem = `
                     <div class="card">
-                        <h3>${donor.name}</h3>
-                        <p>${donor.email}</p>
+                        <h3><strong>Name:</strong> ${donor.name}</h3>
+                        <p><strong>D.O.B:</strong> ${donor.dob}</p>
+                        <p><strong>Email:</strong> ${donor.email}</p>
                         <p><strong>Amount:</strong> ${donor.amount}</p>
                         <p><strong>Category:</strong> ${donor.category}</p>
                         <button>Thank</button>
@@ -56,7 +57,7 @@ $(document).ready(function () {
     });
 
     // Logout functionality
-    $('.fa-sign-out-alt').on('click', function () {
+    $('.sign-out').on('click', function () {
         fetch('/logout')
             .then(() => window.location.href = '/login');
     });
@@ -67,28 +68,6 @@ $(document).ready(function () {
     });
 
     // Handle blog post form submission
-    $('#blog-post-form').on('submit', function (e) {
-        e.preventDefault();
-        const formData = {
-            title: $('#title').val(),
-            content: $('#content').val(),
-            authorName: $('#authorName').val(),
-            picture: $('#picture').val()
-        };
-
-        fetch('/post-blog', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        })
-            .then(response => response.json())
-            .then(() => {
-                alert('Blog posted successfully');
-                $('#blog-post-form').trigger("reset");
-            })
-            .catch(() => alert('Error posting blog'));
-    });
+   
 });
 

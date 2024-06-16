@@ -14,22 +14,21 @@
         </div>
         <a href="index.html">Global Care Foundation</a>
         <div class="admin-info">
-            <span id="admin-name">Admin: </span>
-            <i class="fas fa-sign-out-alt" title="Logout" onclick="logout()"></i>
+            <strong><span id="admin-name"></span></strong>           
         </div>
     </div>
 
-    <div class="sidebar">
+    <div id="sidebar">
         <a href="/"><i class="fas fa-home"></i> Home</a>
         <a href="#content"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <a href="#volunteers"><i class="fas fa-users"></i> Volunteers</a>
         <a href="#donors"><i class="fas fa-hand-holding-usd"></i> Donors</a>
         <a href="#content"><i class="fas fa-blog"></i> Blog Posts</a>
-        <!--search option still not created        
+        <span class="sign-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Log Out</span>
         <div class="search">
             <input type="text" placeholder="Search...">
         </div>
-         -->
+         
     </div>
 
     <div class="content" id="content">
@@ -46,7 +45,7 @@
         <div class="card" id="volunteers">
             <div class="section-header">
                 <h2>Volunteers</h2>
-               <!---- <button>All Volunteers</button>-->
+               <button>All Volunteers</button>
             </div>
             <div id="volunteers-list" class="scrollable">
                 <!-- Dynamically populated list of volunteers -->                
@@ -56,7 +55,7 @@
         <div class="card" id="donors">
             <div class="section-header">
                 <h2>People Who Donated</h2>
-                <!--<button>All Donors</button>-->
+                <button>All Donors</button>
             </div>
             <div id="donors-list" class="grid-container scrollable">
                 <!-- Dynamically populated list of donors -->                
@@ -73,15 +72,16 @@
             </div>
             <div class="form-group">
                 <label for="content">Content:</label>
-                <textarea id="content" name="content" rows="8" placeholder="Enter blog content" required></textarea>
+                <textarea id="content1" name="content" rows="5" placeholder="Enter blog content" required></textarea>
             </div>
             <div class="form-group">
                 <label for="picture" class="file-label"><i class="fas fa-upload"></i> Choose a Picture</label>
-                <input type="file" id="picture" name="picture" accept="image/*">
-            </div>
+                <input type="file" id="picture" name="picture" accept="image/*" onchange="displayFileName()">
+                <span id="picture-name"></span>
+            </div>           
             <div class="form-group">
-                <label for="author">Author's Name:</label>
-                <input type="text" id="authorName" name="author" placeholder="Enter author's name" required>
+                <label for="authorName">Author's Name:</label>
+                <input type="text" id="authorName" name="authorName" placeholder="Enter author's name" required>
             </div>
             <div class="form-group">
                 <input type="submit" value="Post">
@@ -95,51 +95,74 @@
         }
 
         function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
+            const sidebar = document.querySelector('#sidebar');
             sidebar.classList.toggle('active');
         }
-
+        document.getElementById('add-blog-btn').addEventListener('click', togglePopup);
         function togglePopup() {
             const popupForm = document.getElementById('blog-form-popup');
             popupForm.classList.toggle('active');
         }
 
-        document.getElementById('add-blog-btn').addEventListener('click', togglePopup);
+        function displayFileName() {
+            const input = document.getElementById('picture');
+            const fileName = input.files[0].name;
+            const fileNameSpan = document.getElementById('picture-name');
+            fileNameSpan.textContent = `${fileName}`;
+        }
 
-        // Fetch authenticated user info and set admin name
-        fetch('/api/auth-user')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('admin-name').textContent = `Admin: ${data.name}`;
-            })
-            .catch(error => {
-                console.error('Error fetching authenticated user info:', error);
-            });
+        document.addEventListener('DOMContentLoaded', function () {
+            // Fetch authenticated user info and set admin name
+            fetch('/api/auth-user')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('admin-name').textContent = `${data.name}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching authenticated user info:', error);
+                });
+        });
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-          $('#blog-form').submit(function (event) {
-            event.preventDefault();
-            const title = $('#title').val();
-            const content = $('#content').val();
-            const picture = $('#picture').val();
-            const authorName = $('#authorName').val(); 
-      
-            // Send data to server including the selected category
-            $.post('/post-blog', { title, content, picture, authorName }, function (response) {
-              alert(response);
-              $('#title').val('');
-              $('#content').val('');
-              $('#picture').val('');
-              $('#authorName').val(''); 
-            }).fail(function () {
-              alert('Error submitting blog post');
+            $('#blog-form').submit(function (event) {
+                event.preventDefault();
+
+                const title = $('#title').val();
+                const content = $('#content1').val();
+                const authorName = $('#authorName').val();
+                const picture = $('#picture')[0].files[0]; // Get the first file from file input
+
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                formData.append('authorName', authorName);
+                formData.append('picture', picture);
+
+                // Send data to server including the selected category
+                $.ajax({
+                    url: '/post-blog',
+                    type: 'POST',
+                    data: formData,
+                    processData: false, // Prevent jQuery from processing the data
+                    contentType: false, // Set content type to false, jQuery will tell the server its a query string request
+                    cache: false, // Prevent caching of AJAX requests
+                    success: function(response) {
+                        alert(response);
+                        $('#title').val('');
+                        $('#content1').val('');
+                        $('#picture').val('');
+                        $('#authorName').val('');
+                        $('#picture-name').text(''); // Clear selected file name display
+                    },
+                    error: function() {
+                        alert('Error submitting blog post');
+                    }
+                });
             });
-          });
         });
     </script>
-    
     <script src="js/admin.js"></script>
 </body>
 </html>
