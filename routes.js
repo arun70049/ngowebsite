@@ -6,7 +6,7 @@ const moment = require('moment');
 const path = require('path');
 const multer = require('multer');
 const ObjectId = require('mongodb').ObjectId;
-
+const ExcelJS = require('exceljs'); 
 const db = client.db('global_care_db');
 
 // Middleware to check if the user is logged in
@@ -36,8 +36,8 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-router.get('/blog-page1', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/blog-page1.html'));
+router.get('/blog-posts', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/blog-posts.html'));
 });
 
 router.get('/volunteer', (req, res) => {
@@ -115,11 +115,35 @@ router.get('/api/volunteers', requireLogin, async (req, res) => {
     }
 });
 
-router.get('/api/blogs', requireLogin, async (req, res) => {
+router.get('/api/blogs', async (req, res) => {
     try {
-        const blogs = await db.collection('blogs').find().toArray();
+        const blogs = await db.collection('blogs').find().sort({ date: -1 }).limit(10).toArray();
         res.json(blogs);
     } catch (error) {
+        res.status(500).json({ message: 'Error fetching blogs' });
+    }
+});
+router.get('/api/blogs-list', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const perPage = parseInt(req.query.perPage) || 10;
+
+    try {
+        const totalBlogs = await db.collection('blogs').countDocuments();
+        const totalPages = Math.ceil(totalBlogs / perPage);
+
+        const blogs = await db.collection('blogs')
+            .find()
+            .sort({ date: -1 })
+            .skip((page - 1) * perPage)
+            .limit(perPage)
+            .toArray();
+
+        res.json({
+            blogs,
+            totalPages
+        });
+    } catch (error) {
+        console.error('Error fetching blogs:', error);
         res.status(500).json({ message: 'Error fetching blogs' });
     }
 });
@@ -248,6 +272,113 @@ router.get('/api/blog/:id', requireLogin, async (req, res) => {
     }
 });
 
+router.delete('/api/blog/:id', requireLogin, async (req, res) => {
+    const blogId = req.params.id;
+    
+    try {
+        const result = await db.collection('blogs').deleteOne({ _id: new ObjectId(blogId) });
+        
+        if (result.deletedCount === 1) {
+            res.status(200).send('Blog post deleted successfully');
+        } else {
+            res.status(404).send('Blog post not found');
+        }
+    } catch (error) {
+        console.error('Error deleting blog post:', error);
+        res.status(500).send('Error deleting blog post');
+    }
+});
+
+router.get('/download-donors', requireLogin, async (req, res) => {
+    try {
+        const donors = await db.collection('donations').find().toArray();
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Donors');
+
+        worksheet.columns = [
+            { header: 'Name', key: 'name', width: 20 },
+            { header: 'D.O.B', key: 'dob', width: 15 },
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Amount', key: 'amount', width: 15 },
+            { header: 'Category', key: 'category', width: 20 }
+        ];
+
+        donors.forEach(donor => {
+            worksheet.addRow(donor);
+        });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=donors.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error('Error generating Excel file:', error);
+        res.status(500).send('Error generating Excel file');
+    }
+});
+router.get('/download-volunteers', requireLogin, async (req, res) => {
+    try {
+        const donors = await db.collection('volunteers').find().toArray();
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('volunteers');
+
+        worksheet.columns = [
+            { header: 'Name', key: 'name', width: 20 },            
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Message', key: 'message', width: 15 },            
+        ];
+
+        donors.forEach(donor => {
+            worksheet.addRow(donor);
+        });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=volunteers.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error('Error generating Excel file:', error);
+        res.status(500).send('Error generating Excel file');
+    }
+});
+
+router.get('/api/search', requireLogin, async (req, res) => {
+    const query = req.query.query;
+
+    try {
+        const blogs = await db.collection('blogs').find({
+            $or: [
+                { title: { $regex: query, $options: 'i' } },
+                { content: { $regex: query, $options: 'i' } },
+                { authorName: { $regex: query, $options: 'i' } }
+            ]
+        }).toArray();
+
+        const volunteers = await db.collection('volunteers').find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { message: { $regex: query, $options: 'i' } }
+            ]
+        }).toArray();
+
+        const donors = await db.collection('donations').find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } },
+                { category: { $regex: query, $options: 'i' } }
+            ]
+        }).toArray();
+
+        res.json({ blogs, volunteers, donors });
+    } catch (error) {
+        console.error('Error fetching search results:', error);
+        res.status(500).json({ message: 'Error fetching search results' });
+    }
+});
 
 
 module.exports = router;
